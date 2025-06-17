@@ -1,0 +1,4 @@
+pyotp
+qrcode[pil]
+cryptography
+Pillow
