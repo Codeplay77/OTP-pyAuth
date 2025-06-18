@@ -166,7 +166,7 @@ Use as [Issues do GitHub](../../issues) para reportar bugs ou sugerir melhorias.
 
 ## Licença
 
-Este projeto está licenciado sob a **Licença MIT** - veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está licenciado sob a **Licença MIT** - veja o arquivo [LICENSE](license) para detalhes.
 
 ## 🙏 Agradecimentos
 
@@ -178,7 +178,4 @@ Este projeto está licenciado sob a **Licença MIT** - veja o arquivo [LICENSE](
 <div align="center">
 
 **Se este projeto foi útil para você, considere dar uma estrela!**
-
-[⬆️ Voltar ao topo](#-python-authenticator)
-
 </div>
