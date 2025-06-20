@@ -107,7 +107,7 @@ class AuthenticatorApp:
         container = tk.Frame(parent, bg='#f0f2f5')
         container.pack(fill='both', expand=True)
         
-        # Canvas com scrollbar customizada
+        # Canvas com scrollbar
         self.canvas = tk.Canvas(
             container,
             bg='#f0f2f5',
@@ -115,23 +115,15 @@ class AuthenticatorApp:
             bd=0
         )
         
-        # Scrollbar customizada
-        scrollbar_frame = tk.Frame(container, bg='#f0f2f5', width=10)
-        scrollbar_frame.pack(side='right', fill='y')
-        
-        self.scrollbar = tk.Scale(
-            scrollbar_frame,
+        # Scrollbar tradicional
+        scrollbar = tk.Scrollbar(
+            container,
             orient='vertical',
-            showvalue=False,
-            bd=0,
-            highlightthickness=0,
-            troughcolor='#e8eaed',
+            command=self.canvas.yview,
             bg='#dadce0',
-            activebackground='#9aa0a6',
-            width=8,
-            sliderlength=20
+            troughcolor='#e8eaed',
+            width=12
         )
-        self.scrollbar.pack(fill='y', padx=2)
         
         # Frame scrollável
         self.scrollable_frame = tk.Frame(self.canvas, bg='#f0f2f5')
@@ -146,21 +138,20 @@ class AuthenticatorApp:
         self.scrollable_frame.bind('<Configure>', configure_scroll)
         self.canvas.bind('<MouseWheel>', on_mousewheel)
         
-        # Vincular scrollbar
-        def on_scroll(*args):
-            self.canvas.yview(*args)
-            
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.scrollbar.configure(command=on_scroll)
+        # Configurar canvas
+        self.canvas.configure(yscrollcommand=scrollbar.set)
         
         # Criar janela no canvas
-        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor='nw')
+        canvas_frame = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor='nw')
+        
+        # Pack elementos
         self.canvas.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
         
         # Ajustar largura do frame
         def configure_canvas(event):
             canvas_width = event.width
-            self.canvas.itemconfig(self.canvas.find_all()[0], width=canvas_width)
+            self.canvas.itemconfig(canvas_frame, width=canvas_width)
             
         self.canvas.bind('<Configure>', configure_canvas)
     

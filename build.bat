@@ -26,6 +26,8 @@ pyinstaller --onefile ^
     --hidden-import=PIL.Image ^
     --hidden-import=cryptography ^
     --hidden-import=pyotp ^
+    --hidden-import=sqlite3 ^
+    --clean ^
     main.py
 
 :: Verificar se compilação foi bem-sucedida

@@ -1,14 +1,36 @@
 import sqlite3
 import os
+import sys
 from cryptography.fernet import Fernet
 import base64
 
 class Database:
     def __init__(self):
-        self.db_path = "authenticator.db"
-        self.key_path = "key.key"
+        # Determinar diretório correto para arquivos
+        self.app_dir = self.get_app_directory()
+        self.db_path = os.path.join(self.app_dir, "authenticator.db")
+        self.key_path = os.path.join(self.app_dir, "key.key")
+        
+        # Garantir que o diretório existe
+        os.makedirs(self.app_dir, exist_ok=True)
+        
         self.setup_encryption()
         self.setup_database()
+    
+    def get_app_directory(self):
+        """Determina o diretório correto para salvar os arquivos"""
+        if getattr(sys, 'frozen', False):
+            # Executável PyInstaller
+            if sys.platform == "win32":
+                # Windows: usar AppData
+                app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
+                return os.path.join(app_data, 'PythonAuthenticator')
+            else:
+                # Linux/Mac: usar home directory
+                return os.path.join(os.path.expanduser('~'), '.python-authenticator')
+        else:
+            # Script Python normal
+            return os.path.dirname(os.path.abspath(__file__))
     
     def setup_encryption(self):
         """Configura criptografia para as chaves secretas"""

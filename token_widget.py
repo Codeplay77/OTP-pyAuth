@@ -257,7 +257,7 @@ class TokenWidget(tk.Frame):
         # Criar diálogo customizado
         dialog = tk.Toplevel(self)
         dialog.title("Confirmar exclusão")
-        dialog.geometry("350x200")
+        dialog.geometry("350x250")
         dialog.resizable(False, False)
         dialog.transient(self)
         dialog.grab_set()
@@ -267,7 +267,7 @@ class TokenWidget(tk.Frame):
         dialog.update_idletasks()
         x = (dialog.winfo_screenwidth() // 2) - (350 // 2)
         y = (dialog.winfo_screenheight() // 2) - (200 // 2)
-        dialog.geometry(f"350x200+{x}+{y}")
+        dialog.geometry(f"350x250+{x}+{y}")
         
         # Conteúdo
         content = tk.Frame(dialog, bg='white', padx=30, pady=30)
