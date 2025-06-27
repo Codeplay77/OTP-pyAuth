@@ -41,6 +41,21 @@ pip install pyotp cryptography Pillow
 def main():
     """Função principal do aplicativo"""
     try:
+        # Debug: mostrar informações do ambiente
+        print("🔐 Iniciando Python Authenticator...")
+        print("📱 Aplicativo similar ao Google Authenticator")
+        print("✨ Suporte para TOTP (Time-based One-Time Password)")
+        print("-" * 50)
+        
+        # Informações de debug
+        print(f"Python executável: {sys.executable}")
+        print(f"Diretório atual: {os.getcwd()}")
+        print(f"Executável congelado: {getattr(sys, 'frozen', False)}")
+        
+        if getattr(sys, 'frozen', False):
+            print(f"Diretório temporário: {sys._MEIPASS}")
+            print(f"Executável: {sys.executable}")
+        
         # Verifica dependências
         if not check_dependencies():
             sys.exit(1)
@@ -48,12 +63,17 @@ def main():
         # Importa e executa o app principal
         from authenticator_app import AuthenticatorApp
         
-        print("🔐 Iniciando Python Authenticator...")
-        print("📱 Aplicativo similar ao Google Authenticator")
-        print("✨ Suporte para TOTP (Time-based One-Time Password)")
+        # Criar instância do app
+        app = AuthenticatorApp()
+        
+        # Debug: mostrar informações do banco
+        db_info = app.database.get_database_info()
+        print("\n📁 Informações do banco de dados:")
+        for key, value in db_info.items():
+            print(f"  {key}: {value}")
         print("-" * 50)
         
-        app = AuthenticatorApp()
+        # Executar aplicativo
         app.run()
         
     except KeyboardInterrupt:
@@ -62,16 +82,16 @@ def main():
     except Exception as e:
         error_msg = f"Erro fatal: {str(e)}"
         print(f"❌ {error_msg}")
-        messagebox.showerror("Erro Fatal", error_msg)
+        
+        # Tentar mostrar messagebox se possível
+        try:
+            messagebox.showerror("Erro Fatal", error_msg)
+        except:
+            pass
+            
         sys.exit(1)
 
 if __name__ == "__main__":
-    # Configura o diretório de trabalho
-    if hasattr(sys, '_MEIPASS'):
-        # Executando como executável PyInstaller
-        os.chdir(sys._MEIPASS)
-    else:
-        # Executando como script Python
-        os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    
+    # NÃO mudar diretório de trabalho quando executável
+    # Deixar que cada módulo determine onde salvar seus arquivos
     main()

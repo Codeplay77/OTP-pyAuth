@@ -1,4 +1,5 @@
-pyotp
-qrcode[pil]
-cryptography
-Pillow
+pyotp>=2.8.0
+cryptography>=3.4.8
+Pillow>=9.0.0
+pystray>=0.19.4
+keyboard>=1.13.0

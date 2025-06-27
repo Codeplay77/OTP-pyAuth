@@ -1,22 +1,28 @@
 @echo off
 echo ========================================
-echo    Compilando Python Authenticator
+echo    Building Python Authenticator
 echo ========================================
 
-:: Verificar se PyInstaller está instalado
+:: Check if PyInstaller is installed
 python -c "import PyInstaller" 2>nul
 if errorlevel 1 (
-    echo Instalando PyInstaller...
+    echo Installing PyInstaller...
     pip install pyinstaller
 )
 
-:: Criar diretório de build se não existir
+:: Create build directories
 if not exist "build" mkdir build
 if not exist "dist" mkdir dist
 
-:: Compilar o executável
+:: Clean previous builds
+echo Cleaning previous builds...
+if exist "build" rmdir /s /q "build"
+if exist "dist" rmdir /s /q "dist"
+if exist "*.spec" del "*.spec"
+
+:: Build main executable
 echo.
-echo Compilando executável...
+echo Building main executable...
 pyinstaller --onefile ^
     --windowed ^
     --name "PythonAuthenticator" ^
@@ -27,29 +33,41 @@ pyinstaller --onefile ^
     --hidden-import=cryptography ^
     --hidden-import=pyotp ^
     --hidden-import=sqlite3 ^
+    --hidden-import=pystray ^
+    --hidden-import=keyboard ^
     --clean ^
     main.py
 
-:: Verificar se compilação foi bem-sucedida
+:: Verify build success
 if exist "dist\PythonAuthenticator.exe" (
     echo.
     echo ========================================
-    echo   COMPILAÇÃO CONCLUÍDA COM SUCESSO!
+    echo   BUILD COMPLETED SUCCESSFULLY!
     echo ========================================
     echo.
-    echo Executável criado em: dist\PythonAuthenticator.exe
-    echo Tamanho aproximado: 15-25 MB
+    echo Executable: dist\PythonAuthenticator.exe
     echo.
-    echo Para testar: dist\PythonAuthenticator.exe
+    echo DATA STORAGE:
+    echo   - All files created in same folder as executable
+    echo   - config.json: Application settings
+    echo   - authenticator.db: Encrypted account data  
+    echo   - key.key: Encryption key
+    echo.
+    echo PORTABLE SETUP:
+    echo   - Copy entire dist\ folder to move application
+    echo   - No registry or AppData usage
+    echo   - Clean and portable installation
+    echo.
+    echo To run: dist\PythonAuthenticator.exe
     echo.
     pause
 ) else (
     echo.
     echo ========================================
-    echo      ERRO NA COMPILAÇÃO
+    echo      BUILD FAILED
     echo ========================================
     echo.
-    echo Verifique as mensagens de erro acima
+    echo Check error messages above
     echo.
     pause
 )

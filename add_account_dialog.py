@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import re
+from config_manager import ConfigManager
 
 class AddAccountDialog:
     def __init__(self, parent, totp_generator):
@@ -8,12 +9,18 @@ class AddAccountDialog:
         self.totp_generator = totp_generator
         self.result = None
         self.setup_dialog()
+        self.config_manager = ConfigManager()
     
     def setup_dialog(self):
         """Interface moderna do diálogo"""
+        
+        
+        window_width = 420
+        window_height = 780
+        
         self.dialog = tk.Toplevel(self.parent)
         self.dialog.title("Adicionar conta")
-        self.dialog.geometry("460x780")
+        self.dialog.geometry(f"{window_width}x{window_height}")
         self.dialog.resizable(False, False)
         self.dialog.transient(self.parent)
         self.dialog.grab_set()
@@ -21,9 +28,9 @@ class AddAccountDialog:
         
         # Centralizar
         self.dialog.update_idletasks()
-        x = (self.dialog.winfo_screenwidth() // 2) - (460 // 2)
-        y = (self.dialog.winfo_screenheight() // 2) - (480 // 2)
-        self.dialog.geometry(f"460x780+{x}+{y}")
+        x = (self.dialog.winfo_screenwidth() // 2) - (window_width // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (window_height // 2)
+        self.dialog.geometry(f"{window_width}x{window_height}+{x}+{y}")
         
         # Header
         header = tk.Frame(self.dialog, bg='#1a73e8', height=80)
