@@ -90,7 +90,7 @@ class TokenWidget(tk.Frame):
             cursor='hand2',
             command=self.copy_original_secret
         )
-        self.recover_btn.place(relx=0.85, rely=0.0, anchor='ne')
+        self.recover_btn.place(relx=0.85, rely=0.5, anchor='e')
         
         # Hover effects para recover
         def on_recover_enter(e):
@@ -117,7 +117,7 @@ class TokenWidget(tk.Frame):
             cursor='hand2',
             command=self.confirm_delete
         )
-        self.delete_btn.place(relx=1.0, rely=0.0, anchor='ne')
+        self.delete_btn.place(relx=1.0, rely=0.5, anchor='e')
         
         # Hover effects para delete
         def on_delete_enter(e):
