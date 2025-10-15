@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 import time
+import os
+import base64
+from cryptography.fernet import Fernet
 
 class TokenWidget(tk.Frame):
     def __init__(self, parent, account_data, totp_generator, on_delete_callback):
@@ -71,6 +74,33 @@ class TokenWidget(tk.Frame):
             )
             name_label.pack(anchor='w')
         
+        # Botão recuperar chave OTP
+        self.recover_btn = tk.Button(
+            header_frame,
+            text="🔑",
+            font=('Segoe UI', 12),
+            fg='#9aa0a6',
+            bg='white',
+            activebackground='#e8f0fe',
+            activeforeground='#1a73e8',
+            relief='flat',
+            bd=0,
+            width=2,
+            height=1,
+            cursor='hand2',
+            command=self.copy_original_secret
+        )
+        self.recover_btn.place(relx=0.85, rely=0.5, anchor='e')
+        
+        # Hover effects para recover
+        def on_recover_enter(e):
+            self.recover_btn.configure(bg='#e8f0fe', fg='#1a73e8')
+        def on_recover_leave(e):
+            self.recover_btn.configure(bg='white', fg='#9aa0a6')
+            
+        self.recover_btn.bind('<Enter>', on_recover_enter)
+        self.recover_btn.bind('<Leave>', on_recover_leave)
+        
         # Botão delete moderno
         self.delete_btn = tk.Button(
             header_frame,
@@ -87,7 +117,7 @@ class TokenWidget(tk.Frame):
             cursor='hand2',
             command=self.confirm_delete
         )
-        self.delete_btn.place(relx=1.0, rely=0.0, anchor='ne')
+        self.delete_btn.place(relx=1.0, rely=0.5, anchor='e')
         
         # Hover effects para delete
         def on_delete_enter(e):
@@ -179,6 +209,90 @@ class TokenWidget(tk.Frame):
         )
         self.status_label.pack(side='right')
     
+    def load_encryption_key(self):
+        """Carrega a chave de criptografia"""
+        key_path = "key.key"
+        
+        if not os.path.exists(key_path):
+            return None
+        
+        try:
+            with open(key_path, 'rb') as key_file:
+                key = key_file.read()
+            return Fernet(key)
+        except Exception as e:
+            print(f"Erro ao carregar chave: {e}")
+            return None
+    
+    def decrypt_secret(self, cipher, encrypted_secret):
+        """Descriptografa uma chave secreta"""
+        try:
+            return cipher.decrypt(base64.b64decode(encrypted_secret.encode())).decode()
+        except Exception as e:
+            print(f"Erro ao descriptografar: {e}")
+            return None
+    
+    def copy_original_secret(self):
+        """Copia a chave OTP original para o clipboard"""
+        try:
+            # Buscar a chave criptografada diretamente do banco (igual ao recover_otp_keys.py)
+            import sqlite3
+            
+            db_path = "authenticator.db"
+            if not os.path.exists(db_path):
+                messagebox.showerror("Erro", "Banco de dados não encontrado!")
+                return
+            
+            # Carregar chave de criptografia
+            cipher = self.load_encryption_key()
+            if not cipher:
+                messagebox.showerror("Erro", "Não foi possível carregar a chave de criptografia")
+                return
+            
+            # Conectar ao banco e buscar a chave criptografada
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT secret FROM accounts WHERE id = ?", (self.account_id,))
+            result = cursor.fetchone()
+            conn.close()
+            
+            if not result:
+                messagebox.showerror("Erro", "Conta não encontrada no banco de dados")
+                return
+            
+            encrypted_secret = result[0]
+            
+            # Descriptografar chave secreta usando a mesma lógica do recover_otp_keys.py
+            original_secret = self.decrypt_secret(cipher, encrypted_secret)
+            
+            if original_secret:
+                # Limpa clipboard e adiciona chave original
+                self.clipboard_clear()
+                self.clipboard_append(original_secret)
+                
+                # Feedback visual
+                original_text = self.recover_btn['text']
+                original_color = self.recover_btn['fg']
+                
+                self.recover_btn.configure(text="✓", fg='#137333')
+                self.after(1500, lambda: self.recover_btn.configure(
+                    text=original_text, 
+                    fg=original_color
+                ))
+                
+                # Atualiza status temporariamente
+                self.status_label.configure(text="🔑 Chave copiada", fg='#137333')
+                self.after(2000, lambda: self.status_label.configure(
+                    text="✓ Ativo", 
+                    fg='#137333'
+                ))
+                
+            else:
+                messagebox.showerror("Erro", "Não foi possível descriptografar a chave secreta")
+                
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao recuperar chave: {e}")
+
     def update_token(self):
         """Atualiza token e interface"""
         try:
