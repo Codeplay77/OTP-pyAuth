@@ -4,3 +4,4 @@ key.key
 /dist
 /build
 /dist
+*.exe
