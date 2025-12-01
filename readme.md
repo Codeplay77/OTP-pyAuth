@@ -53,7 +53,7 @@
 <td>
 
 **Required:**
-- Python 3.8 or higher
+- Python 3.10 or higher
 - pip (Python package manager)
 
 </td>
@@ -338,14 +338,14 @@ xcopy key.key %BACKUP_DIR%\key_%date:~-4,4%%date:~-10,2%%date:~-7,2%.key /Y
 
 ---
 
-## 🛡️ Security
+## Security
 
 ### Encryption Architecture
 
 ```
 ┌─────────────────────────────────────────────┐
 │  User Input (Secret Key)                    │
-│  "JBSWY3DPEHPK3PXP..."                     │
+│  "JBSWY3DPEHPK3PXP..."                      │
 └─────────────────────────────────────────────┘
               ↓ Validation
 ┌─────────────────────────────────────────────┐
@@ -411,7 +411,7 @@ xcopy key.key %BACKUP_DIR%\key_%date:~-4,4%%date:~-10,2%%date:~-7,2%.key /Y
    - No network access required (app is 100% offline)
    - Firewall can block all connections
 
-#### 🔧 For Developers
+#### For Developers
 
 1. **Code Auditing**:
    - All cryptographic operations use standard libraries
@@ -459,18 +459,7 @@ xcopy key.key %BACKUP_DIR%\key_%date:~-4,4%%date:~-10,2%%date:~-7,2%.key /Y
 - Screen recording/keylogging
 - Authorized user misuse
 
-### Reporting Security Issues
-
-Found a security vulnerability? Please **DO NOT** open a public issue.
-
- **Email:** security@example.com  
- **PGP Key:** [Download public key](link-to-pgp-key)
-
-We take security seriously and will respond within 48 hours.
-
----
-
-## 🛠️ Development
+## Development
 
 ### Technology Stack
 
@@ -506,14 +495,14 @@ We take security seriously and will respond within 48 hours.
 ```
 ┌─────────────────────────────────────────┐
 │      Presentation Layer (UI)            │
-│  • Main Window (authenticator_app.py)  │
-│  • Token Widgets (token_widget.py)     │
-│  • Dialogs (add_account_dialog.py)     │
+│  • Main Window (authenticator_app.py)   │
+│  • Token Widgets (token_widget.py)      │
+│  • Dialogs (add_account_dialog.py)      │
 └─────────────────────────────────────────┘
                 ↓
 ┌─────────────────────────────────────────┐
 │      Business Logic Layer               │
-│  • TOTP Generation (totp_generator.py) │
+│  • TOTP Generation (totp_generator.py)  │
 │  • Config Management (config_manager.py)│
 └─────────────────────────────────────────┘
                 ↓
@@ -710,7 +699,7 @@ Have an idea? [Open a feature request](../../issues/new) with:
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 ### Additional Resources
 
@@ -770,7 +759,7 @@ db.delete_account(account_id)
 
 ---
 
-## ❓ FAQ
+## FAQ
 
 <details>
 <summary><b>Q: Is this compatible with Google Authenticator?</b></summary>
@@ -816,7 +805,7 @@ db.delete_account(account_id)
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -935,7 +924,7 @@ furnished to do so, subject to the following conditions:
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 ### Open Source Libraries
 
@@ -962,7 +951,7 @@ furnished to do so, subject to the following conditions:
 
 ---
 
-## 📊 Project Stats
+## Project Stats
 
 ![GitHub stars](https://img.shields.io/github/stars/Codeplay77/OTP-pyAuth?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/Codeplay77/OTP-pyAuth?style=social)
@@ -973,7 +962,7 @@ furnished to do so, subject to the following conditions:
 
 ---
 
-## 🌟 Star History
+## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Codeplay77/OTP-pyAuth&type=Date)](https://star-history.com/#Codeplay77/OTP-pyAuth&Date)
 
@@ -981,15 +970,14 @@ furnished to do so, subject to the following conditions:
 
 <div align="center">
 
-### 💝 Support This Project
+### Support This Project
 
 If you find this project helpful, please consider:
-
-⭐ **Starring** the repository  
-🐛 **Reporting** bugs  
-💡 **Suggesting** new features  
-🔀 **Contributing** code  
-📢 **Sharing** with others
+ **Starring** the repository  
+ **Reporting** bugs  
+ **Suggesting** new features  
+ **Contributing** code  
+ **Sharing** with others
 
 ---
 
