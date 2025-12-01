@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Python Authenticator - App similar ao Google Authenticator
 Autor: Claude AI
@@ -41,13 +40,10 @@ pip install pyotp cryptography Pillow
 def main():
     """Função principal do aplicativo"""
     try:
-        # Debug: mostrar informações do ambiente
         print("🔐 Iniciando Python Authenticator...")
         print("📱 Aplicativo similar ao Google Authenticator")
         print("✨ Suporte para TOTP (Time-based One-Time Password)")
         print("-" * 50)
-        
-        # Informações de debug
         print(f"Python executável: {sys.executable}")
         print(f"Diretório atual: {os.getcwd()}")
         print(f"Executável congelado: {getattr(sys, 'frozen', False)}")
@@ -55,25 +51,15 @@ def main():
         if getattr(sys, 'frozen', False):
             print(f"Diretório temporário: {sys._MEIPASS}")
             print(f"Executável: {sys.executable}")
-        
-        # Verifica dependências
         if not check_dependencies():
             sys.exit(1)
-        
-        # Importa e executa o app principal
-        from authenticator_app import AuthenticatorApp
-        
-        # Criar instância do app
+        from authenticator_app import AuthenticatorApp        
         app = AuthenticatorApp()
-        
-        # Debug: mostrar informações do banco
         db_info = app.database.get_database_info()
         print("\n📁 Informações do banco de dados:")
         for key, value in db_info.items():
             print(f"  {key}: {value}")
         print("-" * 50)
-        
-        # Executar aplicativo
         app.run()
         
     except KeyboardInterrupt:
@@ -82,8 +68,6 @@ def main():
     except Exception as e:
         error_msg = f"Erro fatal: {str(e)}"
         print(f"❌ {error_msg}")
-        
-        # Tentar mostrar messagebox se possível
         try:
             messagebox.showerror("Erro Fatal", error_msg)
         except:
@@ -92,6 +76,4 @@ def main():
         sys.exit(1)
 
 if __name__ == "__main__":
-    # NÃO mudar diretório de trabalho quando executável
-    # Deixar que cada módulo determine onde salvar seus arquivos
     main()

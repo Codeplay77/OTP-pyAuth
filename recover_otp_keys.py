@@ -44,17 +44,14 @@ def recover_otp_keys():
         print("Arquivo authenticator.db não encontrado!")
         return
     
-    # Carregar chave de criptografia
     cipher = load_encryption_key()
     if not cipher:
         return
     
     try:
-        # Conectar ao banco
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
-        # Buscar todas as contas
         cursor.execute("SELECT id, name, secret, issuer, created_at FROM accounts ORDER BY name")
         accounts = cursor.fetchall()
         
@@ -70,7 +67,6 @@ def recover_otp_keys():
         for account in accounts:
             id_, name, encrypted_secret, issuer, created_at = account
             
-            # Descriptografar chave secreta
             secret = decrypt_secret(cipher, encrypted_secret)
             
             if secret:

@@ -1,24 +1,95 @@
-import tkinter as tk
-from tkinter import messagebox
-import time
+"""
+Token Widget Module for Python Authenticator
+
+This module implements the individual token display widget that shows:
+- Account name and issuer
+- Current TOTP code (updates every 30 seconds)
+- Progress bar for token validity
+- Copy, recover, and delete actions
+
+Design follows Material Design principles with card-based layout.
+
+Author: Codeplay
+Date: June 2025
+"""
+
+# Standard library imports
 import os
 import base64
+import sqlite3
+from typing import Callable, Tuple
+
+# Third-party imports
+import tkinter as tk
+from tkinter import messagebox
 from cryptography.fernet import Fernet
 
+
 class TokenWidget(tk.Frame):
-    def __init__(self, parent, account_data, totp_generator, on_delete_callback):
+    """
+    Individual TOTP token display card widget.
+    
+    Displays a single 2FA account with:
+    - Account name and issuer (service provider)
+    - Current 6-digit TOTP code (formatted as "123 456")
+    - Visual progress bar showing token validity
+    - Time remaining until next token
+    - Copy button for quick clipboard access
+    - Recover button to retrieve original secret key
+    - Delete button with confirmation dialog
+    
+    The widget updates automatically every second to refresh:
+    - Token value (every 30 seconds)
+    - Progress bar
+    - Time remaining counter
+    
+    Attributes:
+        account_id (int): Database ID of the account
+        name (str): Account name/identifier
+        secret (str): Decrypted TOTP secret key
+        issuer (str): Service provider name
+        totp_generator (TOTPGenerator): Token generation engine
+        on_delete_callback (Callable): Function to call when account deleted
+        
+    UI Components:
+        card (Frame): Main card container with white background
+        token_label (Label): Displays the 6-digit TOTP code
+        progress_bar (Frame): Visual indicator of token validity
+        time_label (Label): Shows seconds remaining
+        copy_btn (Button): Copies token to clipboard
+        recover_btn (Button): Retrieves original secret key
+        delete_btn (Button): Deletes account with confirmation
+    """
+    
+    def __init__(
+        self, 
+        parent: tk.Widget,
+        account_data: Tuple[int, str, str, str],
+        totp_generator,
+        on_delete_callback: Callable[[int], None]
+    ) -> None:
+        """
+        Initialize token display widget.
+        
+        Args:
+            parent: Parent tkinter widget
+            account_data: Tuple of (id, name, secret, issuer)
+            totp_generator: TOTPGenerator instance for token creation
+            on_delete_callback: Function to call when account is deleted
+        """
         super().__init__(parent, bg='#f0f2f5')
         
+        # Unpack account data
         self.account_id, self.name, self.secret, self.issuer = account_data
         self.totp_generator = totp_generator
         self.on_delete_callback = on_delete_callback
         
+        # Build UI and display initial token
         self.setup_ui()
         self.update_token()
     
     def setup_ui(self):
         """Interface moderna do token"""
-        # Card container com sombra
         self.card = tk.Frame(
             self,
             bg='white',
@@ -27,23 +98,18 @@ class TokenWidget(tk.Frame):
         )
         self.card.pack(fill='x', padx=2, pady=2)
         
-        # Adicionar efeito de sombra simulado
         shadow = tk.Frame(self, bg='#e0e0e0', height=2)
         shadow.pack(fill='x', padx=4)
         
-        # Padding interno
         content_frame = tk.Frame(self.card, bg='white')
         content_frame.pack(fill='x', padx=20, pady=20)
         
-        # Header com nome e botão delete
         header_frame = tk.Frame(content_frame, bg='white')
         header_frame.pack(fill='x', pady=(0, 15))
         
-        # Nome da conta
         display_name = f"{self.issuer}" if self.issuer else "Conta"
         account_name = self.name if self.name else "Sem nome"
         
-        # Emissor em destaque
         if self.issuer:
             issuer_label = tk.Label(
                 header_frame,
@@ -54,7 +120,6 @@ class TokenWidget(tk.Frame):
             )
             issuer_label.pack(anchor='w')
             
-            # Nome da conta menor
             name_label = tk.Label(
                 header_frame,
                 text=account_name,
@@ -64,7 +129,6 @@ class TokenWidget(tk.Frame):
             )
             name_label.pack(anchor='w')
         else:
-            # Só o nome se não tiver emissor
             name_label = tk.Label(
                 header_frame,
                 text=account_name,
@@ -74,7 +138,6 @@ class TokenWidget(tk.Frame):
             )
             name_label.pack(anchor='w')
         
-        # Botão recuperar chave OTP
         self.recover_btn = tk.Button(
             header_frame,
             text="🔑",
@@ -92,7 +155,6 @@ class TokenWidget(tk.Frame):
         )
         self.recover_btn.place(relx=0.85, rely=0.5, anchor='e')
         
-        # Hover effects para recover
         def on_recover_enter(e):
             self.recover_btn.configure(bg='#e8f0fe', fg='#1a73e8')
         def on_recover_leave(e):
@@ -101,7 +163,6 @@ class TokenWidget(tk.Frame):
         self.recover_btn.bind('<Enter>', on_recover_enter)
         self.recover_btn.bind('<Leave>', on_recover_leave)
         
-        # Botão delete moderno
         self.delete_btn = tk.Button(
             header_frame,
             text="×",
@@ -119,7 +180,6 @@ class TokenWidget(tk.Frame):
         )
         self.delete_btn.place(relx=1.0, rely=0.5, anchor='e')
         
-        # Hover effects para delete
         def on_delete_enter(e):
             self.delete_btn.configure(bg='#fce8e6', fg='#d93025')
         def on_delete_leave(e):
@@ -128,11 +188,9 @@ class TokenWidget(tk.Frame):
         self.delete_btn.bind('<Enter>', on_delete_enter)
         self.delete_btn.bind('<Leave>', on_delete_leave)
         
-        # Token frame
         token_frame = tk.Frame(content_frame, bg='white')
         token_frame.pack(fill='x', pady=(0, 15))
         
-        # Token grande e destacado
         self.token_label = tk.Label(
             token_frame,
             text="000 000",
@@ -143,10 +201,8 @@ class TokenWidget(tk.Frame):
         )
         self.token_label.pack(side='left')
         
-        # Click para copiar no token
         self.token_label.bind('<Button-1>', lambda e: self.copy_token())
         
-        # Botão copiar estilizado
         self.copy_btn = tk.Button(
             token_frame,
             text="📋",
@@ -164,7 +220,6 @@ class TokenWidget(tk.Frame):
         )
         self.copy_btn.pack(side='right', padx=(10, 0))
         
-        # Hover effects para copy
         def on_copy_enter(e):
             self.copy_btn.configure(bg='#e8f0fe', fg='#1a73e8')
         def on_copy_leave(e):
@@ -173,20 +228,16 @@ class TokenWidget(tk.Frame):
         self.copy_btn.bind('<Enter>', on_copy_enter)
         self.copy_btn.bind('<Leave>', on_copy_leave)
         
-        # Barra de progresso moderna
         progress_container = tk.Frame(content_frame, bg='white', height=6)
         progress_container.pack(fill='x', pady=(0, 10))
         progress_container.pack_propagate(False)
         
-        # Background da barra
         self.progress_bg = tk.Frame(progress_container, bg='#e8eaed', height=4)
         self.progress_bg.pack(fill='x', pady=1)
         
-        # Barra de progresso
         self.progress_bar = tk.Frame(self.progress_bg, bg='#1a73e8', height=4)
         self.progress_bar.pack(side='left', fill='y')
         
-        # Tempo restante
         time_frame = tk.Frame(content_frame, bg='white')
         time_frame.pack(fill='x')
         
@@ -199,7 +250,6 @@ class TokenWidget(tk.Frame):
         )
         self.time_label.pack(side='left')
         
-        # Status do token
         self.status_label = tk.Label(
             time_frame,
             text="✓ Ativo",
@@ -235,42 +285,57 @@ class TokenWidget(tk.Frame):
     def copy_original_secret(self):
         """Copia a chave OTP original para o clipboard"""
         try:
-            # Buscar a chave criptografada diretamente do banco (igual ao recover_otp_keys.py)
+            if not self.winfo_exists():
+                return
+            
+            msg = (
+                "Você está prestes a copiar a chave secreta original desta conta.\n\n"
+                "ATENÇÃO: Esta chave dá acesso completo à sua autenticação de dois fatores!\n\n"
+                "Apenas copie se você sabe o que está fazendo.\n\n"
+                "Deseja continuar?"
+            )
+            
+            if not messagebox.askyesno("Aviso de Segurança", msg, parent=self):
+                return
+            
             import sqlite3
             
             db_path = "authenticator.db"
             if not os.path.exists(db_path):
-                messagebox.showerror("Erro", "Banco de dados não encontrado!")
+                messagebox.showerror("Erro", "Banco de dados não encontrado!", parent=self)
                 return
             
-            # Carregar chave de criptografia
             cipher = self.load_encryption_key()
             if not cipher:
-                messagebox.showerror("Erro", "Não foi possível carregar a chave de criptografia")
+                messagebox.showerror("Erro", "Não foi possível carregar a chave de criptografia", parent=self)
                 return
             
-            # Conectar ao banco e buscar a chave criptografada
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            cursor.execute("SELECT secret FROM accounts WHERE id = ?", (self.account_id,))
-            result = cursor.fetchone()
-            conn.close()
+            conn = None
+            try:
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("SELECT secret FROM accounts WHERE id = ?", (self.account_id,))
+                result = cursor.fetchone()
+            except sqlite3.Error as e:
+                messagebox.showerror("Erro", f"Erro ao acessar banco de dados: {e}", parent=self)
+                return
+            finally:
+                if conn:
+                    conn.close()
             
             if not result:
-                messagebox.showerror("Erro", "Conta não encontrada no banco de dados")
+                messagebox.showerror("Erro", "Conta não encontrada no banco de dados", parent=self)
                 return
             
             encrypted_secret = result[0]
             
-            # Descriptografar chave secreta usando a mesma lógica do recover_otp_keys.py
             original_secret = self.decrypt_secret(cipher, encrypted_secret)
             
             if original_secret:
-                # Limpa clipboard e adiciona chave original
                 self.clipboard_clear()
                 self.clipboard_append(original_secret)
+                self.update()  
                 
-                # Feedback visual
                 original_text = self.recover_btn['text']
                 original_color = self.recover_btn['fg']
                 
@@ -280,48 +345,57 @@ class TokenWidget(tk.Frame):
                     fg=original_color
                 ))
                 
-                # Atualiza status temporariamente
                 self.status_label.configure(text="🔑 Chave copiada", fg='#137333')
                 self.after(2000, lambda: self.status_label.configure(
                     text="✓ Ativo", 
                     fg='#137333'
                 ))
                 
-            else:
-                messagebox.showerror("Erro", "Não foi possível descriptografar a chave secreta")
+                messagebox.showinfo(
+                    "Sucesso", 
+                    "Chave secreta copiada para a área de transferência!\n\n"
+                    "Guarde-a em um local seguro.",
+                    parent=self
+                )
                 
+            else:
+                messagebox.showerror("Erro", "Não foi possível descriptografar a chave secreta", parent=self)
+                
+        except tk.TclError as e:
+            print(f"Erro TclError ao copiar chave: {e}")
         except Exception as e:
-            messagebox.showerror("Erro", f"Erro ao recuperar chave: {e}")
+            error_msg = f"Erro ao recuperar chave: {str(e)}"
+            print(f"❌ {error_msg}")
+            messagebox.showerror("Erro", error_msg, parent=self)
 
     def update_token(self):
-        """Atualiza token e interface"""
+        """Atualiza o código TOTP e UI"""
         try:
-            # Gera token
+            if not self.winfo_exists():
+                return
+            
             token = self.totp_generator.generate_token(self.secret)
             
-            if token != "ERROR" and len(token) == 6:
-                # Formata token (000 000)
+            if token != "ERROR" and len(token) == 6 and token.isdigit():
                 formatted_token = f"{token[:3]} {token[3:]}"
                 self.token_label.configure(text=formatted_token, fg='#1a73e8')
                 self.status_label.configure(text="✓ Ativo", fg='#137333')
             else:
                 self.token_label.configure(text="ERROR", fg='#d93025')
                 self.status_label.configure(text="✗ Erro", fg='#d93025')
+                print(f"Token inválido gerado para {self.name}: {token}")
             
-            # Atualiza barra de progresso
             remaining = self.totp_generator.get_time_remaining()
             progress = ((30 - remaining) / 30)
             
-            # Largura da barra baseada no progresso
             try:
                 container_width = self.progress_bg.winfo_width()
-                if container_width > 1:  # Evita erro quando ainda não foi renderizado
+                if container_width > 1: 
                     bar_width = int(container_width * progress)
                     self.progress_bar.configure(width=bar_width)
             except:
                 pass
             
-            # Muda cor quando está acabando
             if remaining <= 5:
                 self.progress_bar.configure(bg='#ea4335')
                 self.time_label.configure(fg='#ea4335')
@@ -329,7 +403,6 @@ class TokenWidget(tk.Frame):
                 self.progress_bar.configure(bg='#1a73e8')
                 self.time_label.configure(fg='#5f6368')
             
-            # Atualiza tempo
             self.time_label.configure(text=f"{remaining}s")
             
         except Exception as e:
@@ -340,13 +413,16 @@ class TokenWidget(tk.Frame):
     def copy_token(self):
         """Copia token para clipboard"""
         try:
+            if not self.winfo_exists():
+                return
+            
             token = self.totp_generator.generate_token(self.secret)
-            if token != "ERROR":
-                # Limpa clipboard e adiciona token
+            
+            if token != "ERROR" and len(token) == 6 and token.isdigit():
                 self.clipboard_clear()
                 self.clipboard_append(token)
+                self.update()
                 
-                # Feedback visual
                 original_text = self.copy_btn['text']
                 original_color = self.copy_btn['fg']
                 
@@ -356,19 +432,31 @@ class TokenWidget(tk.Frame):
                     fg=original_color
                 ))
                 
-                # Atualiza status temporariamente
                 self.status_label.configure(text="📋 Copiado", fg='#137333')
                 self.after(2000, lambda: self.status_label.configure(
                     text="✓ Ativo", 
                     fg='#137333'
                 ))
                 
+            else:
+                messagebox.showwarning(
+                    "Token Inválido", 
+                    "Não foi possível gerar um token válido.\nVerifique a chave secreta.",
+                    parent=self
+                )
+                return
+                
+        except tk.TclError as e:
+            print(f"Erro TclError ao copiar token: {e}")
         except Exception as e:
-            messagebox.showerror("Erro", f"Erro ao copiar: {e}")
+            print(f"Erro ao copiar token: {e}")
+            messagebox.showerror("Erro", f"Erro ao copiar token: {str(e)}", parent=self)
     
     def confirm_delete(self):
         """Confirma exclusão com diálogo moderno"""
-        # Criar diálogo customizado
+        if not self.winfo_exists():
+            return
+        
         dialog = tk.Toplevel(self)
         dialog.title("Confirmar exclusão")
         dialog.geometry("350x250")
@@ -377,17 +465,14 @@ class TokenWidget(tk.Frame):
         dialog.grab_set()
         dialog.configure(bg='white')
         
-        # Centralizar
         dialog.update_idletasks()
         x = (dialog.winfo_screenwidth() // 2) - (350 // 2)
         y = (dialog.winfo_screenheight() // 2) - (200 // 2)
         dialog.geometry(f"350x250+{x}+{y}")
         
-        # Conteúdo
         content = tk.Frame(dialog, bg='white', padx=30, pady=30)
         content.pack(fill='both', expand=True)
         
-        # Ícone
         icon_label = tk.Label(
             content,
             text="⚠️",
@@ -396,7 +481,6 @@ class TokenWidget(tk.Frame):
         )
         icon_label.pack(pady=(0, 15))
         
-        # Título
         title_label = tk.Label(
             content,
             text="Excluir conta?",
@@ -406,7 +490,6 @@ class TokenWidget(tk.Frame):
         )
         title_label.pack(pady=(0, 10))
         
-        # Mensagem
         display_name = self.issuer if self.issuer else self.name
         msg_label = tk.Label(
             content,
@@ -418,7 +501,6 @@ class TokenWidget(tk.Frame):
         )
         msg_label.pack(pady=(0, 20))
         
-        # Botões
         button_frame = tk.Frame(content, bg='white')
         button_frame.pack(fill='x')
         
@@ -429,7 +511,6 @@ class TokenWidget(tk.Frame):
             dialog.destroy()
             self.on_delete_callback(self.account_id)
         
-        # Botão cancelar
         cancel_btn = tk.Button(
             button_frame,
             text="Cancelar",
@@ -447,7 +528,6 @@ class TokenWidget(tk.Frame):
         )
         cancel_btn.pack(side='right', padx=(10, 0))
         
-        # Botão excluir
         delete_btn = tk.Button(
             button_frame,
             text="Excluir",

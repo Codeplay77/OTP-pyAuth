@@ -1,7 +1,30 @@
+"""
+Add Account Dialog Module for Python Authenticator
+
+Provides a modal dialog for adding new 2FA accounts with:
+- Account name input (required)
+- Service issuer input (optional)
+- Secret key input with validation (required)
+- Real-time validation feedback
+- Show/hide secret key toggle
+
+Design follows Material Design with blue accent colors.
+
+Author: Codeplay
+Date: June 2025
+"""
+
+# Standard library imports
+import re
+from typing import Optional, Dict
+
+# Third-party imports
 import tkinter as tk
 from tkinter import messagebox
-import re
+
+# Local imports
 from config_manager import ConfigManager
+
 
 class AddAccountDialog:
     def __init__(self, parent, totp_generator):
@@ -25,14 +48,12 @@ class AddAccountDialog:
         self.dialog.transient(self.parent)
         self.dialog.grab_set()
         self.dialog.configure(bg='white')
-        
-        # Centralizar
+        self.dialog.bind('<Escape>', lambda e: self.cancel())
+        self.dialog.bind('<Return>', lambda e: self.add_account() if self.secret_entry.get().strip() else None)
         self.dialog.update_idletasks()
         x = (self.dialog.winfo_screenwidth() // 2) - (window_width // 2)
         y = (self.dialog.winfo_screenheight() // 2) - (window_height // 2)
         self.dialog.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        
-        # Header
         header = tk.Frame(self.dialog, bg='#1a73e8', height=80)
         header.pack(fill='x')
         header.pack_propagate(False)
@@ -57,22 +78,15 @@ class AddAccountDialog:
             bg='#1a73e8'
         )
         subtitle_label.pack(anchor='w', pady=(5, 0))
-        
-        # Conteúdo principal
         main_content = tk.Frame(self.dialog, bg='white')
         main_content.pack(fill='both', expand=True, padx=30, pady=30)
-        
-        # Conteúdo direto (sem tabs)
         form_container = tk.Frame(main_content, bg='white')
         form_container.pack(fill='both', expand=True, pady=(0, 20))
         
         self.setup_manual_form(form_container)
-        
-        # Botões inferiores
         button_frame = tk.Frame(main_content, bg='white')
         button_frame.pack(fill='x', pady=(20, 0))
         
-        # Botão Cancelar
         cancel_btn = tk.Button(
             button_frame,
             text="Cancelar",
@@ -88,8 +102,7 @@ class AddAccountDialog:
             command=self.cancel
         )
         cancel_btn.pack(side='right', padx=(10, 0))
-        
-        # Botão Adicionar
+
         self.add_btn = tk.Button(
             button_frame,
             text="Adicionar conta",
@@ -111,7 +124,6 @@ class AddAccountDialog:
         form_frame = tk.Frame(parent, bg='white')
         form_frame.pack(fill='both', expand=True)
         
-        # Nome da conta
         tk.Label(
             form_frame,
             text="Nome da conta",
@@ -133,7 +145,8 @@ class AddAccountDialog:
         )
         self.name_entry.pack(fill='x', pady=(0, 20), ipady=8)
         
-        # Emissor (opcional)
+        self.dialog.after(100, lambda: self.name_entry.focus())
+        
         tk.Label(
             form_frame,
             text="Emissor (opcional)",
@@ -155,7 +168,6 @@ class AddAccountDialog:
         )
         self.issuer_entry.pack(fill='x', pady=(0, 20), ipady=8)
         
-        # Chave secreta
         secret_label_frame = tk.Frame(form_frame, bg='white')
         secret_label_frame.pack(fill='x', pady=(0, 8))
         
@@ -189,7 +201,6 @@ class AddAccountDialog:
         )
         self.secret_entry.pack(fill='x', pady=(0, 10), ipady=8)
         
-        # Checkbox mostrar chave
         self.show_secret_var = tk.BooleanVar()
         show_check = tk.Checkbutton(
             form_frame,
@@ -207,10 +218,8 @@ class AddAccountDialog:
         )
         show_check.pack(anchor='w', pady=(0, 15))
         
-        # Validação em tempo real
         self.secret_entry.bind('<KeyRelease>', self.validate_secret)
         
-        # Status da validação
         self.status_frame = tk.Frame(form_frame, bg='white')
         self.status_frame.pack(fill='x', pady=(0, 10))
         
@@ -222,7 +231,6 @@ class AddAccountDialog:
         )
         self.status_label.pack(anchor='w')
         
-        # Ajuda
         help_frame = tk.Frame(form_frame, bg='#f8f9fa', relief='flat', bd=1)
         help_frame.pack(fill='x', pady=(10, 0))
         
@@ -268,7 +276,6 @@ class AddAccountDialog:
     
     def add_account(self):
         """Adiciona a conta"""
-        # Validação do formulário
         name = self.name_entry.get().strip()
         secret = self.secret_entry.get().strip()
         issuer = self.issuer_entry.get().strip()
@@ -283,7 +290,6 @@ class AddAccountDialog:
             self.secret_entry.focus()
             return
         
-        # Valida chave
         is_valid, message = self.totp_generator.validate_secret(secret)
         if not is_valid:
             messagebox.showerror("Erro", f"Chave secreta inválida:\n{message}")
