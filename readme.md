@@ -10,8 +10,6 @@
 [![Code Style](https://img.shields.io/badge/code%20style-PEP%208-orange.svg)](https://www.python.org/dev/peps/pep-0008/)
 
 **A secure, feature-rich desktop application for managing Time-based One-Time Passwords (TOTP) with a beautiful Material Design interface.**
-
-[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Security](#-security) • [Documentation](#-documentation)
 </div>
 
 ---
