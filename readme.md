@@ -321,7 +321,7 @@ OTP-pyAuth/
 
 > **Warning:** Without `authenticator.db` and `key.key`, you will lose all stored accounts!
 
-#### 💾 Backup Recommendations
+#### Backup Recommendations
 
 ```bash
 # Manual backup
@@ -698,17 +698,6 @@ Have an idea? [Open a feature request](../../issues/new) with:
 - **Additional Context**: Any other relevant info
 
 ---
-
-## Documentation
-
-### Additional Resources
-
-| Document | Description |
-|----------|-------------|
-| **[ARCHITECTURE.md](ARCHITECTURE.md)** | System architecture and design patterns |
-| **[BEST_PRACTICES.md](BEST_PRACTICES.md)** | Python coding standards used |
-| **[CHANGELOG_REVISION.md](CHANGELOG_REVISION.md)** | Detailed version history |
-| **[CODE_REVIEW_FINAL.md](CODE_REVIEW_FINAL.md)** | Code review summary |
 
 ### API Documentation
 
