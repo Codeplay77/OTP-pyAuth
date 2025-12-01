@@ -1,7 +1,38 @@
+# ---- Python ----
 __pycache__/
-authenticator.db
-key.key
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# ---- Virtual environments ----
+.env
+.venv
+venv/
+env/
+
+# ---- Build / Distribution ----
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# ---- PyInstaller ----
+# Arquivos gerados pelo PyInstaller
+*.spec
 /dist
 /build
-/dist
 *.exe
+dist/PythonAuthenticator.exe
+
+# ---- Banco de dados, chaves e arquivos sensíveis ----
+authenticator.db
+key.key
+
+# ---- Logs ----
+*.log
+
+# ---- Outros ----
+.DS_Store
+Thumbs.db
