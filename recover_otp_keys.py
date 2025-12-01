@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
 Script para recuperar chaves OTP do banco de dados criptografado
+
+Original Author: 0xneves (https://github.com/0xneves)
+Pull Request: #1 – https://github.com/Codeplay77/OTP-pyAuth/pull/1
+Created: Junho de 2025
+
+Descrição:
+Este arquivo foi criado originalmente pelo contribuidor 0xneves na Pull Request #1.
+Script para recuperar chaves OTP do banco de dados criptografado
 """
 
 import sqlite3
